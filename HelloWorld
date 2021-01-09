@@ -1,0 +1,93 @@
+## This is a markdown file
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tibble)
+library(tidyr)
+library(ggplot2)
+```
+
+Dplyr es una estructural gramatical para la manipulación de datos que proporciona un conjunto coherente de verbos que facilitan las tareas más comunes en la manipulación de datos.  
+
+  * **mutate ()**: agrega nuevas variables que son funciones de variables existentes.  
+  * **select ()**: selecciona variables en función de sus nombres.  
+  * **filter ()**: selecciona casos en función de sus valores.  
+  * **summarize ()**: reduce múltiples valores hasta un solo resumen.  
+  * **arrange ()**: cambia el orden de las filas.  
+  
+Todos estos se combinan naturalmente con group_by () que le permite realizar cualquier operación “por grupo”. Puede obtener más información sobre ellos en viñeta “dplyr” . Además de estos verbos de tabla única, dplyr también proporciona una variedad de verbos para la manipulación de dos conjuntos de datos. Es importante leer esta viñeta de “two-table”. 
+
+### 1. realizar un resumen de la base de datos ###
+
+```{r}
+summary(starwars)
+```
+
+
+
+
+### 2. Determinar el numero de valores NA para cada columna ###
+
+```{r}
+sapply(starwars, function(x) sum(is.na(x))) # datos faltantes por variables
+```
+La variable con mas datos faltantes es corresponde a la variable birth_year
+
+
+### 3. Crear una nueva tabla llamada BMI, donde se calcule el indice de masa
+### corporal (BMI) para cada uno de los personajes de starwars, además de una
+### columna llamada sobrepeso, donde se coloque 1 si el BMI de la persona es mayor
+### a 25 y 0 en otro caso. 
+
+```{r}
+BMI<-mutate(starwars,BMI=round(mass/((height/100)^2),4))%>%mutate(BMI, sobrepeso=ifelse(BMI > 25,"1", "0"))
+BMI
+```
+El indice de masa corporal(BMI) mas alto es de 443.42 y corresponde a una persona de color de ojos naranja que tiene una masa de mas de 1358 kg  y una estatura aproximada de 175 cm
+
+
+
+### 4. Crear una tabla para cada especie donde exista una columna llamada ‘total’
+### con el numero de personajes por especie y una median_w con la mediana de su
+### peso. Ordenar en forma descendente por ‘total’
+
+```{r}
+by_species<- starwars%>%group_by(species)%>%summarise(total=length(species), median_w=median(mass,na.rm = T))%>%arrange(desc(total))
+by_species
+```
+### 5. Crear una tabla con el promedio de estatura para los diferentes personajes
+### por su color de ojos, llamarla mean_h, ordenarla de mayor a menor
+
+```{r}
+by_species_color_ojos<- starwars%>%group_by(eye_color)%>%summarise(total=length(eye_color), mean_h=mean(height,na.rm = T))%>%arrange(desc(mean_h))
+by_species_color_ojos
+```
+
+### 6. Realizar una grafica donde se pueda analizar la piel, el color de los ojos,
+### estatura y masa. (Elegir la gráfica que según su criterio genera la mayor cantidad
+### de información)
+
+```{r}
+
+
+
+
+ggplot(starwars, aes(x = mass ,
+y = height  , color = skin_color ,
+shape=eye_color)) + geom_point(aes(size = 0.5))+ scale_shape_manual(
+values = c(3:17))+scale_x_log10()
+
+#grafico por facetas
+ 
+ggplot(starwars, aes(x = mass ,
+y = height  , color = skin_color ,
+shape=eye_color)) + geom_point(aes(size = 0.5))+ scale_shape_manual(
+values = c(3:17))+scale_x_log10()+   facet_wrap(~ skin_color)
+
+
+
+```
+
+Segun las grafica podemos observar que las personas de color de piel yellow y color de ojos blue  tienen una masa menor que 100 kg y una estatura entre 150cm y 200cm.
+Ademas podemos observar una persona de color de ojos naranja que tiene una masa de mas de 1000 kg  y una estatura aproximada de 150 cm, el cual puede ser considerado como una dato atipico
